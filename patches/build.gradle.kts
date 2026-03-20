@@ -2,8 +2,8 @@ group = "app.morphe"
 
 patches {
     about {
-        name = "XYZ Patches for use with Morphe"
-        description = "Example patches"
+        name = "Morphe Patches"
+        description = "Patches for Morphe"
         source = "git@github.com:MorpheApp/morphe-patches-template.git"
         author = "Awesome dev"
         contact = "na"
