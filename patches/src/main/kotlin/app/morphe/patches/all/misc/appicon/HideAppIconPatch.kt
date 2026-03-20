@@ -1,28 +1,48 @@
-package app.template.patches.example
+package app.morphe.patches.all.misc.appicon
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
-
-private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/template/extension/ExamplePatch;"
+import app.morphe.patcher.patch.resourcePatch
+import app.morphe.util.asSequence
+import app.morphe.util.childElementsSequence
+import org.w3c.dom.Element
+import java.util.logging.Logger
 
 @Suppress("unused")
-val examplePatch = bytecodePatch(
-    name = "Example Patch",
-    description = "Example patch to start with."
+val hideAppIconPatch = resourcePatch(
+    name = "Hide app icon",
+    description = "Hides the app icon from the Android launcher.",
+    use = false,
 ) {
-    compatibleWith("com.example.app"("1.0.0"))
+    apply {
+        document("AndroidManifest.xml").use { document ->
+            var changed = false
 
-    extendWith("extensions/extension.mpp")
+            val intentFilters = document.getElementsByTagName("intent-filter")
+            for (node in intentFilters.asSequence().filterIsInstance<Element>()) {
+                var hasMainAction = false
+                var launcherCategory: Element? = null
 
-    // Business logic of the patch to disable ads in the app.
-    execute {
-        AdLoaderFingerprint.method.addInstructions(
-            0,
-            """
-                invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR;->showAds()Z
-                move-result v0
-                return v0
-            """
-        )
+                for (child in node.childElementsSequence()) {
+                    when (child.tagName) {
+                        "action" -> if (child.getAttribute("android:name") == "android.intent.action.MAIN") {
+                            hasMainAction = true
+                        }
+
+                        "category" -> if (child.getAttribute("android:name") == "android.intent.category.LAUNCHER") {
+                            launcherCategory = child
+                        }
+                    }
+                }
+
+                if (hasMainAction && launcherCategory != null) {
+                    launcherCategory.setAttribute("android:name", "android.intent.category.DEFAULT")
+                    changed = true
+                }
+            }
+
+            if (!changed) {
+                Logger.getLogger(this::class.java.name)
+                    .warning("No changes made: Did not find any launcher intent-filters to change.")
+            }
+        }
     }
 }
