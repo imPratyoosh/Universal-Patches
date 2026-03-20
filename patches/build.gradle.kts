@@ -4,26 +4,35 @@ patches {
     about {
         name = "Morphe Patches"
         description = "Patches for Morphe"
-        source = "git@github.com:MorpheApp/morphe-patches-template.git"
-        author = "imPratyoosh"
+        source = "git@github.com:MorpheApp/morphe-patches.git"
+        author = "MorpheApp"
         contact = "na"
         website = "https://morphe.software"
-        license = "GPLv3"
-    }
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
+        license = "GNU General Public License v3.0, with additional GPL section 7 requirements"
     }
 }
 
 dependencies {
     // Used by JsonGenerator.
     implementation(libs.gson)
+
+    // Required due to smali, or build fails. Can be removed once smali is bumped.
+    implementation(libs.guava)
+
+    // Android API stubs defined here.
+    compileOnly(project(":patches:stub"))
 }
 
 tasks {
+    register<JavaExec>("checkStringResources") {
+        description = "Checks resource strings for invalid formatting"
+
+        dependsOn(compileKotlin)
+
+        classpath = sourceSets["main"].runtimeClasspath
+        mainClass.set("app.morphe.util.resource.CheckStringResourcesKt")
+    }
+
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
 
