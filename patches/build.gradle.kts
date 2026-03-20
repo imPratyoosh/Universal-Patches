@@ -5,7 +5,7 @@ patches {
         name = "Morphe Patches"
         description = "Patches for Morphe"
         source = "git@github.com:MorpheApp/morphe-patches-template.git"
-        author = "Awesome dev"
+        author = "imPratyoosh"
         contact = "na"
         website = "https://morphe.software"
         license = "GPLv3"
